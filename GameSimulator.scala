@@ -6,16 +6,16 @@ import scala.util.Random
 object GameSimulator {
 
   def main(args: Array[String]): Unit ={
-    val conn: Connection = DriverManager.getConnection("jdbc:mysql://aa1l44kxpqxyxqa.cuapmtv2e1gk.us-east-1.rds.amazonaws.com:3306/CFB", "admin", "MooseMuffin!!22")
+    val conn: Connection = DriverManager.getConnection("jdbc:mysql://"+args[0], args[1], args[2])
 
     //AUTOMATING GAMES FOR WEEK N
-    val rs: ResultSet = conn.createStatement().executeQuery("SELECT WEEK_"+3+".GAME_ID, WEEK_"+3+".HOME, WEEK_"+3+".AWAY FROM TEAMS LEFT JOIN WEEK_"+3+" ON " +
-                                                                  "(WEEK_"+3+".HOME=TEAMS.TEAM_ID OR WEEK_"+3+".AWAY=TEAMS.TEAM_ID) WHERE TEAMS.CONFERENCE='AAC' " +
+    val rs: ResultSet = conn.createStatement().executeQuery("SELECT WEEK_"+args[4]+".GAME_ID, WEEK_"+args[4]+".HOME, WEEK_"+args[4]+".AWAY FROM TEAMS LEFT JOIN WEEK_"+args[4]+" ON " +
+                                                                  "(WEEK_"+args[4]+".HOME=TEAMS.TEAM_ID OR WEEK_"+args[4]+".AWAY=TEAMS.TEAM_ID) WHERE TEAMS.CONFERENCE='AAC' " +
                                                                   "AND HOME IS NOT NULL AND AWAY IS NOT NULL");
 
     val list = new Iterator[Game]{
       def hasNext = rs.next()
-      def next() = Game(randomizeTeamData(rs.getInt(2),conn,3),randomizeTeamData(rs.getInt(3),conn,3))
+      def next() = Game(randomizeTeamData(rs.getInt(2),conn,args[4]),randomizeTeamData(rs.getInt(3),conn,args[4]))
     }.toList
 
     for{
@@ -54,7 +54,6 @@ object GameSimulator {
 
   def insertMatchupData(game: Game, connection: Connection): Unit ={
     val st: Statement = connection.createStatement()
-//    println("UPDATE MATCHUP SET HOME_POINTS="+game.teamOne.points+", AWAY_POINTS="+game.teamTwo.points+", HOME_OFF="+game.teamOne.yards+", AWAY_0FF="+game.teamTwo.yards+" WHERE GAME_ID="+game.teamTwo.gameId)
     st.execute("UPDATE MATCHUP SET HOME_POINTS="+game.teamOne.points+", AWAY_POINTS="+game.teamTwo.points+", HOME_OFF="+game.teamOne.yards+", AWAY_OFF="+game.teamTwo.yards+" WHERE GAME_ID="+game.teamTwo.gameId)
     st.close()
   }

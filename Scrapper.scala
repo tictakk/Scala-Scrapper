@@ -14,7 +14,7 @@ object GatherTeamData {
     import scala.io.Source
 //    val data = Source.fromURL("http://www.espn.com/college-football/scoreboard/_/group/80/year/2016/seasontype/2/week/1").mkString
 
-    val data = Source.fromURL("http://www.espn.com/college-football/schedule/_/week/2").mkString
+    val data = Source.fromURL("http://www.espn.com/college-football/schedule/_/week/2").mkString //change week here manually
     val pat = """college-football\/game\?gameId=([0-9]+)""".r
     val college = """college-football\/game\?gameId="""
     val meta = """([^a-zA-Z]+)"""
@@ -23,35 +23,11 @@ object GatherTeamData {
     val getIDs: List[String] = lst.flatMap(l => l.split(college)).filterNot(_.isEmpty)
     val teamSetList = getIDs.map(getTeamName(_))
     teamSetList.foreach(x => println(x.head + ":"+x.last))
-//    println(teamSetList)
-//    getIDs.foreach(x => println(getTeamName(x).head))
-
-//    val name: Set[String] = getTeamName(getIDs(0))
-//    val score = testGetScore(getIDs(0))
-//    val yards = testGetStats(getIDs(0))
-
-//    val teamOne = Team(name.head.split(meta).reduceRight(_++_), score.head, yards.head)
-//    val teamTwo = Team(name.last.split(meta).reduceRight(_++_), score.last, yards.last)
-//    println(teamOne.score)
-//    updateDB(teamOne, teamTwo)
 
 
   }
 
   case class Team(teamName: String, score: String, yards: String)
-
-  //  def getStats(ids: List[String]): Unit =
-  //  {
-  //    val url = "http://www.espn.com/college-football/matchup?gameId="
-  //    for (id <- ids){
-  //      import scala.io.Source
-  //      val matchupInfo = Source.fromURL(url.concat(id)).mkString
-  //      val index1 = matchupInfo.indexOf("<tr class=\"highlight\" data-stat-attr=\"totalYards\">")
-  //      val sub = matchupInfo.substring(index1,index1+201)
-  //      val firstTotal = sub.split("""<td>([0-9]+)</td>""")
-  //      println(firstTotal)
-  //    }
-  //  }
 
   def testGetStats(id: String): Set[String] =
   {
@@ -102,6 +78,7 @@ object GatherTeamData {
     import java.sql.SQLException
 
     try {
+      //not prod db
       val conn: Connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/web", "webber", "matthew")
       val query = "UPDATE MasterGamesList SET score_1=" + team1.score + ", score_2=" + team2.score + ", offense_1=" + team1.yards + ", offense_2=" + team2.yards + " WHERE team_1=(SELECT team_id FROM Teams WHERE name='" + team1.teamName + "') AND team_2=(SELECt team_id FROM Teams WHERE name='" + team2.teamName + "') OR team_1=(SELECT team_id FROM Teams WHERE name='" + team2.teamName + "') AND team_2=(SELECT team_id FROM Teams WHERE name='" + team1.teamName + "')"
       conn.createStatement().executeUpdate(query);
@@ -121,6 +98,7 @@ object GatherTeamData {
     import java.sql.SQLException
 
     try{
+      //not prod
       val conn: Connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/CFB","root","root")
       val ps = conn.prepareStatement("INSERT INTO MATCHUP VALUES(?, ?, ?)")
       ps.setString(1, "NULL")
